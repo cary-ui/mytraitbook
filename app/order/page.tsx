@@ -1,4 +1,45 @@
+"use client";
+
+import { useState } from "react";
+
 export default function Order() {
+  const [status, setStatus] = useState("");
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+const form = event.currentTarget;
+    setStatus("Sending...");
+
+    const formData = new FormData(event.currentTarget);
+
+    const data = {
+      name: formData.get("name"),
+      company: formData.get("company"),
+      companyWebsite: formData.get("companyWebsite"),
+      email: formData.get("email"),
+      phone: formData.get("phone"),
+      quantity: formData.get("quantity"),
+      productType: formData.get("productType"),
+      logo: formData.get("logo"),
+      neededBy: formData.get("neededBy"),
+      notes: formData.get("notes"),
+    };
+
+    const response = await fetch("/api/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (response.ok) {
+      setStatus("Inquiry sent. We will follow up soon.");
+form.reset();    } else {
+      setStatus("Something went wrong. Please try again.");
+    }
+  }
+
   return (
     <main className="min-h-screen bg-white text-zinc-950">
       <section className="bg-zinc-950 px-6 py-20 text-white">
@@ -21,7 +62,10 @@ export default function Order() {
 
       <section className="px-6 py-20">
         <div className="mx-auto grid max-w-6xl gap-12 md:grid-cols-2">
-          <form className="space-y-6 rounded-3xl border border-zinc-200 bg-white p-8 shadow-sm">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-6 rounded-3xl border border-zinc-200 bg-white p-8 shadow-sm"
+          >
             <div>
               <label className="block text-sm font-semibold">Name</label>
               <input
@@ -29,6 +73,7 @@ export default function Order() {
                 type="text"
                 name="name"
                 placeholder="Your name"
+                required
               />
             </div>
 
@@ -48,7 +93,7 @@ export default function Order() {
               </label>
               <input
                 className="mt-2 w-full rounded-xl border border-zinc-300 px-4 py-3"
-                type="url"
+                type="text"
                 name="companyWebsite"
                 placeholder="https://yourcompany.com"
               />
@@ -61,6 +106,7 @@ export default function Order() {
                 type="email"
                 name="email"
                 placeholder="you@company.com"
+                required
               />
             </div>
 
@@ -78,12 +124,14 @@ export default function Order() {
               <label className="block text-sm font-semibold">
                 Estimated Quantity
               </label>
-              <input
-                className="mt-2 w-full rounded-xl border border-zinc-300 px-4 py-3"
-                type="number"
-                name="quantity"
-                placeholder="Example: 25"
-              />
+             <input
+  className="mt-2 w-full rounded-xl border border-zinc-300 px-4 py-3"
+  type="number"
+  name="quantity"
+  min="20"
+  defaultValue="20"
+  placeholder="Minimum order: 20"
+/>
             </div>
 
             <div>
@@ -142,6 +190,12 @@ export default function Order() {
             >
               Submit Inquiry
             </button>
+
+            {status && (
+              <p className="text-center text-sm font-semibold text-zinc-700">
+                {status}
+              </p>
+            )}
           </form>
 
           <div>
